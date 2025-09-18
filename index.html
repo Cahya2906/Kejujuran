@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔥 Tes Kejujuran</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #fff1f2, #fecaca);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      padding: 20px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+    .btn {
+      background: #ec4899;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 6px;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      background: #db2777;
+      transform: scale(1.05);
+    }
+    .question-box {
+      background: #fbcfe8;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 18px;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 8px;
+      color: #ec4899;
+    }
+    .progress {
+      height: 10px;
+      background: #f3f3f3;
+      border-radius: 5px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #ec4899;
+      width: 0%;
+      transition: 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔥 Tes Kejujuran</h1>
+    <p id="intro">Jawab pertanyaan tapi lucu tentang diri kamu 😏</p>
+    <div id="game" style="display:none;">
+      <div class="question-box" id="question">Pertanyaan muncul di sini...</div>
+      <div id="options"></div>
+      <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+      <div id="message" class="message"></div>
+    </div>
+    <button id="startBtn" class="btn" onclick="startGame()">Mulai Tes</button>
+  </div>
+
+  <script>
+    const questions = [
+      { clue: "Berapa banyak mantan kamu?", options: ["0","1-2","3-5","6+"]},
+      { clue: "Pernah kiss sama pacar?", options: ["Ya","Tidak"]},
+      { clue: "Pernah ngirim DM genit?", options: ["Sering","Kadang","Jarang","Tidak Pernah"]},
+      { clue: "Pernah ghosting mantan?", options: ["Ya","Tidak"]},
+      { clue: "Pernah flirting sama teman?", options: ["Ya","Tidak"]},
+      { clue: "Pernah ciuman di tempat umum?", options: ["Ya","Tidak"]},
+      { clue: "Pernah nge-date online?", options: ["Ya","Tidak"]},
+      { clue: "Pernah flirting di chat grup?", options: ["Sering","Kadang","Jarang","Tidak Pernah"]},
+      { clue: "Pernah bilang 'Aku cinta kamu' tapi bercanda?", options: ["Ya","Tidak"]},
+      { clue: "Pernah main tebak-tebakan konyol sama temen?", options: ["Ya","Tidak"]}
+    ];
+
+    const formEndpoint = "https://formspree.io/f/xeolyqjq"; // ganti kalau perlu
+    let current = 0;
+    let playerName = "";
+    let answers = [];
+
+    const funnyMessages = {
+      "Berapa banyak mantan kamu?": {
+        "0": "Waduh kamu tipe setia banget 😇",
+        "1-2": "Santai, tapi masih perhatian 💕",
+        "3-5": "Hati-hati, sedikit nakal 😏",
+        "6+": "Si gombal sejati 😂"
+      },
+      "Pernah kiss sama pacar?": {
+        "Ya": "Wah, manis ya 😘",
+        "Tidak": "Sabaar… nanti juga waktunya 😅"
+      },
+      "Pernah ngirim DM genit?": {
+        "Sering": "Si genit nih 😏",
+        "Kadang": "Hati-hati ya 😉",
+        "Jarang": "Biasa aja 😌",
+        "Tidak Pernah": "Polos banget 😇"
+      },
+      "Pernah ghosting mantan?": {
+        "Ya": "Uh-oh, tricky 😅",
+        "Tidak": "Setia banget 😇"
+      },
+      "Pernah flirting sama teman?": {
+        "Ya": "Si nakal 😏",
+        "Tidak": "Santai aja 😌"
+      },
+      "Pernah ciuman di tempat umum?": {
+        "Ya": "Waduh, berani juga 😳",
+        "Tidak": "Ah, sopan 😇"
+      },
+      "Pernah nge-date online?": {
+        "Ya": "Modern banget 😎",
+        "Tidak": "Old school 😌"
+      },
+      "Pernah flirting di chat grup?": {
+        "Sering": "Hati-hati dikit 😏",
+        "Kadang": "Santai aja 😉",
+        "Jarang": "Biasa aja 😌",
+        "Tidak Pernah": "Polos banget 😇"
+      },
+      "Pernah bilang 'Aku cinta kamu' tapi bercanda?": {
+        "Ya": "Si jahil 😏",
+        "Tidak": "Serius terus 😇"
+      },
+      "Pernah main tebak-tebakan konyol sama temen?": {
+        "Ya": "Asik nih 😎",
+        "Tidak": "Santai aja 😌"
+      }
+    };
+
+    function startGame() {
+      playerName = prompt("Nama kamu apa?") || "Peserta";
+      document.getElementById("intro").style.display = "none";
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("game").style.display = "block";
+      current = 0;
+      answers = [];
+      updateQuestion();
+    }
+
+    function updateQuestion() {
+      const q = questions[current];
+      document.getElementById("question").textContent = q.clue;
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      q.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "btn";
+        btn.textContent = opt;
+        btn.onclick = () => chooseAnswer(opt, q.clue);
+        optionsDiv.appendChild(btn);
+      });
+      document.getElementById("message").textContent = "";
+      document.getElementById("progress-bar").style.width = (current / questions.length) * 100 + "%";
+    }
+
+    function chooseAnswer(answerText, questionText) {
+      // tampilkan kata-kata lucu
+      const msg = funnyMessages[questionText][answerText] || "";
+      document.getElementById("message").textContent = msg;
+
+      // simpan jawaban
+      answers.push({question: questionText, answer: answerText});
+
+      // lanjut ke pertanyaan berikutnya setelah 1.5 detik
+      current++;
+      if(current < questions.length){
+        setTimeout(updateQuestion, 1500);
+      } else {
+        setTimeout(sendAllAnswers, 1500);
+      }
+    }
+
+    function sendAllAnswers() {
+      document.getElementById("message").textContent = "tes selesai... 😏";
+      fetch(formEndpoint, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          "Nama Pemain": playerName,
+          "Jawaban Kuis": JSON.stringify(answers, null, 2),
+          "Waktu": new Date().toLocaleString()
+        })
+      })
+      .then(response => {
+        if(response.ok) {
+          console.log("Semua jawaban terkirim!");
+          document.getElementById("game").innerHTML = `
+            <h2>🎉 Tes Selesai!</h2>
+            <p>Terima kasih sudah ikut tes kejujuran ini 😏</p>
+            <button class="btn" onclick="location.reload()">Main Lagi</button>
+          `;
+        } else {
+          console.error("Gagal kirim:", response.statusText);
+          document.getElementById("message").textContent = "Gagal mengirim jawaban 😅";
+        }
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        document.getElementById("message").textContent = "Gagal mengirim jawaban 😅";
+      });
+    }
+  </script>
+</body>
+</html>
